@@ -4,7 +4,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import WhatsAppButton from "./components/WhatsAppButton";
 import Home from "./pages/Home";
-import Packages from "./pages/packages";
+import Packages from "./pages/Packages";
 import PackageDetail from "./pages/PackageDetail";
 import Gallery from "./pages/Gallery";
 import Blog from "./pages/Blog";
