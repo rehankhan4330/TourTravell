@@ -23,6 +23,7 @@ const emptyForm = {
 function AdminDashboard() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("packages");
+
     const [packages, setPackages] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -205,6 +206,16 @@ function AdminDashboard() {
         }
     };
 
+    const handleStatusChange = async (bookingId, newStatus) => {
+        try {
+            await api.patch(`/booking/${bookingId}/status`, { status: newStatus });
+            toast.success("Status updated");
+            fetchData();
+        } catch (err) {
+            toast.error("Failed to update status");
+        }
+    };
+
     const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition";
 
     const renderPackageForm = () => (
@@ -264,9 +275,8 @@ function AdminDashboard() {
                                     <img
                                         src={img.url}
                                         alt="package"
-                                        className={`w-16 h-16 object-cover rounded-lg border-2 transition ${
-                                            marked ? "border-red-500 opacity-50" : "border-transparent"
-                                        }`}
+                                        className={`w-16 h-16 object-cover rounded-lg border-2 transition ${marked ? "border-red-500 opacity-50" : "border-transparent"
+                                            }`}
                                     />
                                     <input
                                         type="checkbox"
@@ -339,17 +349,15 @@ function AdminDashboard() {
                 <div className="flex gap-3 mb-8">
                     <button
                         onClick={() => setActiveTab("packages")}
-                        className={`px-6 py-2.5 rounded-full text-sm font-semibold transition ${
-                            activeTab === "packages" ? "bg-emerald-900 text-white" : "bg-white text-gray-600 border border-gray-200"
-                        }`}
+                        className={`px-6 py-2.5 rounded-full text-sm font-semibold transition ${activeTab === "packages" ? "bg-emerald-900 text-white" : "bg-white text-gray-600 border border-gray-200"
+                            }`}
                     >
                         Packages ({packages.length})
                     </button>
                     <button
                         onClick={() => setActiveTab("bookings")}
-                        className={`px-6 py-2.5 rounded-full text-sm font-semibold transition ${
-                            activeTab === "bookings" ? "bg-emerald-900 text-white" : "bg-white text-gray-600 border border-gray-200"
-                        }`}
+                        className={`px-6 py-2.5 rounded-full text-sm font-semibold transition ${activeTab === "bookings" ? "bg-emerald-900 text-white" : "bg-white text-gray-600 border border-gray-200"
+                            }`}
                     >
                         Inquiries ({bookings.length})
                     </button>
@@ -468,37 +476,74 @@ function AdminDashboard() {
 
                 {activeTab === "bookings" && (
                     <div>
-                        <h3 className="font-[Playfair_Display] text-xl font-bold text-gray-800 mb-6">Customer Inquiries</h3>
-                        {bookings.length === 0 ? (
-                            <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
-                                <p className="text-gray-400">No inquiries yet</p>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-4">
-                                {bookings.map((booking) => (
-                                    <div key={booking._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <p className="font-semibold text-gray-800">{booking.customerName}</p>
-                                                <p className="text-gray-500 text-sm">{booking.phone}</p>
-                                            </div>
-                                            <span className="bg-amber-50 text-amber-700 text-xs font-bold px-3 py-1 rounded-full uppercase">
-                                                {booking.status}
-                                            </span>
-                                        </div>
-                                        <p className="text-gray-600 text-sm mt-3">
-                                            Package: <span className="font-medium">{booking.package ? booking.package.title : "N/A"}</span>
-                                        </p>
-                                        <p className="text-gray-500 text-sm">
-                                            Group Size: {booking.groupSize} · Budget: ₹{booking.budget ? booking.budget.toLocaleString() : "N/A"}
-                                        </p>
-                                        {booking.message && (
-                                            <p className="text-gray-500 text-sm italic mt-2 border-t border-gray-100 pt-2">"{booking.message}"</p>
-                                        )}
-                                    </div>
+                        <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
+                            <h3 className="font-[Playfair_Display] text-xl font-bold text-gray-800">Customer Inquiries</h3>
+                            <div className="flex gap-2 flex-wrap">
+                                {["All", "pending", "contacted", "confirmed", "cancelled"].map((status) => (
+                                    <button
+                                        key={status}
+                                        onClick={() => setBookingFilter(status)}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-semibold capitalize transition ${bookingFilter === status
+                                            ? "bg-emerald-900 text-white"
+                                            : "bg-white text-gray-600 border border-gray-200"
+                                            }`}
+                                    >
+                                        {status}
+                                    </button>
                                 ))}
                             </div>
-                        )}
+                        </div>
+
+                        {(() => {
+                            const filteredBookings = bookingFilter === "All"
+                                ? bookings
+                                : bookings.filter((b) => b.status === bookingFilter);
+
+                            if (filteredBookings.length === 0) {
+                                return (
+                                    <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
+                                        <p className="text-gray-400">No inquiries in this category</p>
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <div className="flex flex-col gap-4">
+                                    {filteredBookings.map((booking) => (
+                                        <div
+                                            key={booking._id}
+                                            className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col gap-4"
+                                        >
+                                            <div className="flex justify-between items-start gap-4 flex-wrap">
+                                                <div>
+                                                    <h4 className="font-semibold text-gray-800">
+                                                        {booking.name || booking.customerName || "Customer inquiry"}
+                                                    </h4>
+                                                    {booking.email && <p className="text-sm text-gray-500">{booking.email}</p>}
+                                                    {booking.phone && <p className="text-sm text-gray-500">{booking.phone}</p>}
+                                                </div>
+                                                <select
+                                                    value={booking.status}
+                                                    onChange={(e) => handleStatusChange(booking._id, e.target.value)}
+                                                    className="border border-gray-200 rounded-full px-3 py-1.5 text-xs font-semibold capitalize"
+                                                >
+                                                    {['pending', 'contacted', 'confirmed', 'cancelled'].map((status) => (
+                                                        <option key={status} value={status}>{status}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            {booking.package?.title && (
+                                                <p className="text-sm text-gray-600">Package: {booking.package.title}</p>
+                                            )}
+                                            {booking.message && <p className="text-sm text-gray-600">{booking.message}</p>}
+                                            <p className="text-gray-400 text-xs mt-2">
+                                                {new Date(booking.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })()}
                     </div>
                 )}
             </div>
