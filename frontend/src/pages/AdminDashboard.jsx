@@ -38,6 +38,7 @@ function AdminDashboard() {
 
     const [uploadingId, setUploadingId] = useState(null);
     const [confirmDeactivateId, setConfirmDeactivateId] = useState(null);
+    const [bookingFilter, setBookingFilter] = useState("All");
 
     useEffect(() => {
         if (!isLoggedIn()) {
