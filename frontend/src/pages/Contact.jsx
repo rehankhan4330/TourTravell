@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../services/api";
+import usePageTitle from "../hooks/usePageTitle";
 
 function Contact() {
+    usePageTitle("Contact Us");
+    
     const [searchParams] = useSearchParams();
     const packageId = searchParams.get("package");
 

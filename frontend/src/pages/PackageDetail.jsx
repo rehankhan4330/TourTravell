@@ -1,18 +1,30 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../services/api";
+import usePageTitle from "../hooks/usePageTitle";
+import ImageCarousel from "../components/ImageCarousel";
 
 function PackageDetail() {
     const { id } = useParams();
     const [pkg, setPkg] = useState(null);
+    const [related, setRelated] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    usePageTitle(pkg?.title || "Package Details");
 
     useEffect(() => {
         const fetchPackage = async () => {
             try {
                 const response = await api.get(`/package/${id}`);
                 setPkg(response.data.data);
+
+                const allRes = await api.get("/package");
+                const relatedPkgs = allRes.data.data
+                    .filter((p) => p._id !== id && p.type === response.data.data.type)
+                    .slice(0, 3);
+                setRelated(relatedPkgs);
+
             } catch (err) {
                 setError("Failed to load package details");
             } finally {
@@ -32,9 +44,18 @@ function PackageDetail() {
             <div className="bg-emerald-950 text-white py-14 px-6">
                 <div className="max-w-4xl mx-auto">
                     <Link to="/packages" className="text-emerald-300 hover:text-white transition text-sm">← Back to Packages</Link>
-                    <span className="inline-block bg-amber-600 text-white text-xs font-bold px-3 py-1 rounded-full mt-4 mb-3 uppercase tracking-wide">
-                        {pkg.type}
-                    </span>
+                    <div className="mt-4 mb-3 flex gap-2 flex-wrap">
+                        <span className="inline-block bg-amber-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                            {pkg.type}
+                        </span>
+                        {pkg.availability && pkg.availability !== "Available" && (
+                            <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide ${
+                                pkg.availability === "Sold Out" ? "bg-red-600 text-white" : "bg-orange-500 text-white"
+                            }`}>
+                                {pkg.availability}
+                            </span>
+                        )}
+                    </div>
                     <h1 className="font-[Playfair_Display] text-3xl md:text-4xl font-bold">{pkg.title}</h1>
                 </div>
             </div>
@@ -110,30 +131,7 @@ function PackageDetail() {
                 {pkg.images && pkg.images.length > 0 && (
                     <div className="mb-10">
                         <h3 className="font-[Playfair_Display] text-2xl font-bold text-gray-800 mb-4">Photos</h3>
-                        <div className="flex flex-wrap gap-3">
-                            {pkg.images.map((img, index) => (
-                                <img
-                                    key={index}
-                                    src={`http://localhost:5000${img}`}
-                                    alt={pkg.title}
-                                    className="w-48 h-36 object-cover rounded-xl"
-                                />
-                            ))}
-                        </div>
-                    </div>
-                )}{pkg.images && pkg.images.length > 0 && (
-                    <div className="mb-10">
-                        <h3 className="font-[Playfair_Display] text-2xl font-bold text-gray-800 mb-4">Photos</h3>
-                        <div className="flex flex-wrap gap-3">
-                            {pkg.images.map((img, index) => (
-                                <img
-                                    key={index}
-                                    src={img.url}
-                                    alt={pkg.title}
-                                    className="w-48 h-36 object-cover rounded-xl"
-                                />
-                            ))}
-                        </div>
+                        <ImageCarousel images={pkg.images} title={pkg.title} />
                     </div>
                 )}
 
@@ -142,6 +140,33 @@ function PackageDetail() {
                         Inquire About This Package
                     </button>
                 </Link>
+
+                {related.length > 0 && (
+                    <div className="mt-16 pt-10 border-t border-gray-100">
+                        <h3 className="font-[Playfair_Display] text-2xl font-bold text-gray-800 mb-6">You Might Also Like</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {related.map((r) => (
+                                <Link
+                                    key={r._id}
+                                    to={`/packages/${r._id}`}
+                                    className="group bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition"
+                                >
+                                    {r.images && r.images.length > 0 ? (
+                                        <div className="h-36 overflow-hidden">
+                                            <img src={r.images[0].url} alt={r.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                                        </div>
+                                    ) : (
+                                        <div className="h-36 bg-gradient-to-br from-emerald-50 to-amber-50" />
+                                    )}
+                                    <div className="p-4">
+                                        <p className="font-[Playfair_Display] font-bold text-gray-800 text-sm mb-1">{r.title}</p>
+                                        <p className="text-emerald-700 font-bold text-sm">₹{r.price.toLocaleString()}</p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,9 +1,12 @@
 import { useParams, Link } from "react-router-dom";
 import { blogPosts } from "../data/blogPosts";
+import usePageTitle from "../hooks/usePageTitle";
 
 function BlogDetail() {
     const { slug } = useParams();
     const post = blogPosts.find((p) => p.slug === slug);
+
+    usePageTitle(post?.title || "Guide");
 
     if (!post) {
         return (

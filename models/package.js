@@ -82,6 +82,11 @@ const packageSchema = new mongoose.Schema(
         isActive: {
             type: Boolean,
             default: true
+        },
+        availability: {
+            type: String,
+            enum: ["Available", "Limited Seats", "Sold Out"],
+            default: "Available"
         }
     },
 

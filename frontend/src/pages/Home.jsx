@@ -1,8 +1,11 @@
+import usePageTitle from "../hooks/usePageTitle";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../services/api";
 
 function Home() {
+    usePageTitle("Home");
+    
     const [packages, setPackages] = useState([]);
     const [loading, setLoading] = useState(true);
 

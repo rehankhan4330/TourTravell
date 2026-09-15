@@ -3,10 +3,11 @@ const Booking = require("../models/booking");
 const createBooking = async (req, res) => {
     try {
         const newBooking = await Booking.create(req.body);
+        const populatedBooking = await newBooking.populate("package", "title type price");
 
         res.status(201).json({
             success: true,
-            data: newBooking
+            data: populatedBooking
         });
 
     } catch (error) {

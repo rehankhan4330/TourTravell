@@ -2,8 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { saveToken } from "../services/auth";
+import usePageTitle from "../hooks/usePageTitle";
 
 function AdminLogin() {
+    usePageTitle("Admin Login");
+    
     const navigate = useNavigate();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");

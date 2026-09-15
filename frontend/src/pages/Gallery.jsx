@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
+import usePageTitle from "../hooks/usePageTitle";
 
 const testimonials = [
+    
     {
         name: "Fatima Sheikh",
         text: "Alhamdulillah, our Umrah trip was smooth and well organized. The hotel was very close to Haram and the guide was extremely helpful.",
@@ -20,6 +22,8 @@ const testimonials = [
 ];
 
 function Gallery() {
+    usePageTitle("Gallery");
+
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
 

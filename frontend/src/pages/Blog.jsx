@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 import { blogPosts } from "../data/blogPosts";
+import usePageTitle from "../hooks/usePageTitle";
 
 function Blog() {
+    usePageTitle("Guides");
+    
     return (
         <div>
             <div className="bg-emerald-950 text-white py-16 px-6 text-center">
